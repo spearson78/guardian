@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"github.com/spearson78/guardian/script/opcode"
 	"github.com/spearson78/guardian/script/token"
+	"math/big"
 	"strings"
 	"testing"
 )
@@ -124,6 +125,96 @@ CHECKSIG
 	tok = l.Scan()
 	if tok != token.ENDOFSCRIPT {
 		t.Errorf("Failed ENDOFSCRIPT tok %s", tok)
+	}
+
+	tok = l.Scan()
+	if tok != token.ENDOFSCRIPT {
+		t.Errorf("Failed double ENDOFSCRIPT tok %s", tok)
+	}
+
+	if errorReported {
+		t.Errorf("Failed ErrorReported")
+	}
+
+	if l.ErrorCount != 0 {
+		t.Errorf("Failed ErrorCount %d", l.ErrorCount)
+	}
+}
+
+func TestMinusOne(t *testing.T) {
+	script := "-1"
+
+	var l Lexer
+
+	errorReported := false
+
+	l.Init(strings.NewReader(script), func(pos int, msg string) {
+		errorReported = true
+	})
+
+	tok := l.Scan()
+	if tok != token.NUMBER || l.Number().Cmp(big.NewInt(-1)) != 0 {
+		t.Errorf("Failed -1 tok %s op %s", tok, l.Op())
+	}
+
+	tok = l.Scan()
+	if tok != token.ENDOFSCRIPT {
+		t.Errorf("Failed double ENDOFSCRIPT tok %s", tok)
+	}
+
+	if errorReported {
+		t.Errorf("Failed ErrorReported")
+	}
+
+	if l.ErrorCount != 0 {
+		t.Errorf("Failed ErrorCount %d", l.ErrorCount)
+	}
+}
+
+func TestMinusOperation(t *testing.T) {
+	script := "-DUP"
+
+	var l Lexer
+
+	errorReported := false
+
+	l.Init(strings.NewReader(script), func(pos int, msg string) {
+		errorReported = true
+	})
+
+	tok := l.Scan()
+	if tok != token.INVALID {
+		t.Errorf("Failed -DUP tok %s op %s", tok, l.Op())
+	}
+
+	tok = l.Scan()
+	if tok != token.ENDOFSCRIPT {
+		t.Errorf("Failed double ENDOFSCRIPT tok %s", tok)
+	}
+
+	if errorReported {
+		t.Errorf("Failed ErrorReported")
+	}
+
+	if l.ErrorCount != 0 {
+		t.Errorf("Failed ErrorCount %d", l.ErrorCount)
+	}
+}
+
+func TestMinus(t *testing.T) {
+	script := "-"
+
+	var l Lexer
+
+	errorReported := false
+
+	l.Init(strings.NewReader(script), func(pos int, msg string) {
+		errorReported = true
+	})
+
+	tok := l.Scan()
+	if tok != token.INVALID {
+		t.Errorf("Failed - tok %s op %s", tok, l.Op())
 	}
 
 	tok = l.Scan()

@@ -106,6 +106,13 @@ func (l *Lexer) Scan() (tok token.Token) {
 		l.data = []byte(l.s.TokenText())
 	case scanner.EOF:
 		tok = token.ENDOFSCRIPT
+	case '-':
+		tok = l.Scan()
+		if tok == token.NUMBER {
+			l.number.Neg(l.number)
+		} else {
+			tok = token.INVALID
+		}
 	}
 
 	return
