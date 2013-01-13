@@ -1,0 +1,4 @@
+guardian
+========
+
+Prototype Bitcoin Client
