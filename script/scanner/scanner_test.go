@@ -20,39 +20,39 @@ func TestStandardTransactionToBitcoinAddress(t *testing.T) {
 		errorReported = true
 	})
 
-	tok, op, bcPos, endbcPos, data, number := s.Scan()
-	if tok != token.OPERATION || op != opcode.DUP || bcPos != 0 || endbcPos != 1 || data != nil || number != nil {
-		t.Errorf("Failed DUP tok %s op %s bcPos %d endbcPos %d", tok, op, bcPos, endbcPos)
+	tok := s.Scan()
+	if tok != token.OPERATION || s.Op() != opcode.DUP {
+		t.Errorf("Failed DUP tok %s op %s", tok, s.Op())
 	}
 
-	tok, op, bcPos, endbcPos, data, number = s.Scan()
-	if tok != token.OPERATION || op != opcode.HASH160 || bcPos != 1 || endbcPos != 2 || data != nil || number != nil {
-		t.Errorf("Failed HASH160 tok %s op %s bcPos %d endbcPos %d", tok, op, bcPos, endbcPos)
+	tok = s.Scan()
+	if tok != token.OPERATION || s.Op() != opcode.HASH160 {
+		t.Errorf("Failed HASH160 tok %s op %s", tok, s.Op())
 	}
 
-	tok, op, bcPos, endbcPos, data, number = s.Scan()
-	if tok != token.DATA || op != opcode.INVALID || bcPos != 2 || endbcPos != 23 || !bytes.Equal(data, checkData) || number != nil {
-		t.Errorf("Failed DATA tok %s op %s bcPos %d endbcPos %d data %s number %s", tok, op, bcPos, endbcPos, hex.EncodeToString(data), number)
+	tok = s.Scan()
+	if tok != token.DATA || !bytes.Equal(s.Data(), checkData) {
+		t.Errorf("Failed DUP tok %s op %s bcPos %d endbcPos %d", tok, s.Op(), s.Pos(), s.EndPos())
 	}
 
-	tok, op, bcPos, endbcPos, data, number = s.Scan()
-	if tok != token.OPERATION || op != opcode.EQUALVERIFY || bcPos != 23 || endbcPos != 24 || data != nil || number != nil {
-		t.Errorf("Failed EQUALVERIFY tok %s op %s bcPos %d endbcPos %d", tok, op, bcPos, endbcPos)
+	tok = s.Scan()
+	if tok != token.OPERATION || s.Op() != opcode.EQUALVERIFY {
+		t.Errorf("Failed EQUALVERIFY tok %s op %s", tok, s.Op())
 	}
 
-	tok, op, bcPos, endbcPos, data, number = s.Scan()
-	if tok != token.OPERATION || op != opcode.CHECKSIG || bcPos != 24 || endbcPos != 25 || data != nil || number != nil {
-		t.Errorf("Failed CHECKSIG tok %s op %s bcPos %d endbcPos %d", tok, op, bcPos, endbcPos)
+	tok = s.Scan()
+	if tok != token.OPERATION || s.Op() != opcode.CHECKSIG {
+		t.Errorf("Failed CHECKSIG tok %s op %s", tok, s.Op())
 	}
 
-	tok, op, bcPos, endbcPos, data, number = s.Scan()
-	if tok != token.ENDOFSCRIPT || op != opcode.INVALID || bcPos != 25 || endbcPos != 26 || data != nil || number != nil {
-		t.Errorf("Failed ENDOFSCRIPT tok %s op %s bcPos %d endbcPos %d", tok, op, bcPos, endbcPos)
+	tok = s.Scan()
+	if tok != token.ENDOFSCRIPT {
+		t.Errorf("Failed ENDOFSCRIPT tok %s", tok)
 	}
 
-	tok, op, bcPos, endbcPos, data, number = s.Scan()
-	if tok != token.ENDOFSCRIPT || op != opcode.INVALID || bcPos != 25 || endbcPos != 26 || data != nil || number != nil {
-		t.Errorf("Failed double ENDOFSCRIPT tok %s op %s bcPos %d endbcPos %d", tok, op, bcPos, endbcPos)
+	tok = s.Scan()
+	if tok != token.ENDOFSCRIPT {
+		t.Errorf("Failed double ENDOFSCRIPT tok %s", tok)
 	}
 
 	if errorReported {
@@ -60,7 +60,7 @@ func TestStandardTransactionToBitcoinAddress(t *testing.T) {
 	}
 
 	if s.ErrorCount != 0 {
-		t.Errorf("Failed ErrorCount !=0 %d", s.ErrorCount)
+		t.Errorf("Failed ErrorCount %d", s.ErrorCount)
 	}
 
 }
@@ -77,37 +77,37 @@ func TestUnderflow(t *testing.T) {
 		errorReported = true
 	})
 
-	tok, op, bcPos, endbcPos, data, number := s.Scan()
-	if tok != token.OPERATION || op != opcode.DUP || bcPos != 0 || endbcPos != 1 || data != nil || number != nil {
-		t.Errorf("Failed DUP tok %s op %s bcPos %d endbcPos %d", tok, op, bcPos, endbcPos)
+	tok := s.Scan()
+	if tok != token.OPERATION || s.Op() != opcode.DUP {
+		t.Errorf("Failed DUP tok %s op %s", tok, s.Op())
 	}
 
-	tok, op, bcPos, endbcPos, data, number = s.Scan()
-	if tok != token.OPERATION || op != opcode.HASH160 || bcPos != 1 || endbcPos != 2 || data != nil || number != nil {
-		t.Errorf("Failed HASH160 tok %s op %s bcPos %d endbcPos %d", tok, op, bcPos, endbcPos)
+	tok = s.Scan()
+	if tok != token.OPERATION || s.Op() != opcode.HASH160 {
+		t.Errorf("Failed HASH160 tok %s op %s", tok, s.Op())
 	}
 
-	tok, op, bcPos, endbcPos, data, number = s.Scan()
-	if tok != token.DATA || op != opcode.INVALID || bcPos != 2 || endbcPos != 23 || !bytes.Equal(data, checkData) || number != nil {
-		t.Errorf("Failed DATA tok %s op %s bcPos %d endbcPos %d data %s number %s", tok, op, bcPos, endbcPos, hex.EncodeToString(data), number)
+	tok = s.Scan()
+	if tok != token.DATA || !bytes.Equal(s.Data(), checkData) {
+		t.Errorf("Failed DUP tok %s op %s bcPos %d endbcPos %d", tok, s.Op(), s.Pos(), s.EndPos())
 	}
 
-	tok, op, bcPos, endbcPos, data, number = s.Scan()
-	if tok != token.ENDOFSCRIPT || op != opcode.INVALID || bcPos != 23 || endbcPos != 24 || data != nil || number != nil {
-		t.Errorf("Failed ENDOFSCRIPT tok %s op %s bcPos %d endbcPos %d", tok, op, bcPos, endbcPos)
+	tok = s.Scan()
+	if tok != token.ENDOFSCRIPT {
+		t.Errorf("Failed ENDOFSCRIPT tok %s op %s", tok, s.Op())
 	}
 
-	tok, op, bcPos, endbcPos, data, number = s.Scan()
-	if tok != token.ENDOFSCRIPT || op != opcode.INVALID || bcPos != 23 || endbcPos != 24 || data != nil || number != nil {
-		t.Errorf("Failed double ENDOFSCRIPT tok %s op %s bcPos %d endbcPos %d", tok, op, bcPos, endbcPos)
+	tok = s.Scan()
+	if tok != token.ENDOFSCRIPT {
+		t.Errorf("Failed double ENDOFSCRIPT tok %s", tok)
 	}
 
 	if !errorReported {
-		t.Errorf("Failed No ErrorReported")
+		t.Errorf("Failed Not ErrorReported")
 	}
 
 	if s.ErrorCount != 1 {
-		t.Errorf("Failed ErrorCount !=1 %d", s.ErrorCount)
+		t.Errorf("Failed ErrorCount %d", s.ErrorCount)
 	}
 
 }
@@ -123,47 +123,47 @@ func TestInvalidToken(t *testing.T) {
 		errorReported = true
 	})
 
-	tok, op, bcPos, endbcPos, data, number := s.Scan()
-	if tok != token.OPERATION || op != opcode.DUP || bcPos != 0 || endbcPos != 1 || data != nil || number != nil {
-		t.Errorf("Failed DUP tok %s op %s bcPos %d endbcPos %d", tok, op, bcPos, endbcPos)
+	tok := s.Scan()
+	if tok != token.OPERATION || s.Op() != opcode.DUP {
+		t.Errorf("Failed DUP tok %s op %s", tok, s.Op())
 	}
 
-	tok, op, bcPos, endbcPos, data, number = s.Scan()
-	if tok != token.OPERATION || op != opcode.HASH160 || bcPos != 1 || endbcPos != 2 || data != nil || number != nil {
-		t.Errorf("Failed HASH160 tok %s op %s bcPos %d endbcPos %d", tok, op, bcPos, endbcPos)
+	tok = s.Scan()
+	if tok != token.OPERATION || s.Op() != opcode.HASH160 {
+		t.Errorf("Failed HASH160 tok %s op %s", tok, s.Op())
 	}
 
-	tok, op, bcPos, endbcPos, data, number = s.Scan()
-	if tok != token.DATA || op != opcode.INVALID || bcPos != 2 || endbcPos != 23 || !bytes.Equal(data, checkData) || number != nil {
-		t.Errorf("Failed DATA tok %s op %s bcPos %d endbcPos %d data %s number %s", tok, op, bcPos, endbcPos, hex.EncodeToString(data), number)
+	tok = s.Scan()
+	if tok != token.DATA || !bytes.Equal(s.Data(), checkData) {
+		t.Errorf("Failed DUP tok %s op %s bcPos %d endbcPos %d", tok, s.Op(), s.Pos(), s.EndPos())
 	}
 
-	tok, op, bcPos, endbcPos, data, number = s.Scan()
-	if tok != token.INVALID || op != opcode.INVALID || bcPos != 23 || endbcPos != 24 || data != nil || number != nil {
-		t.Errorf("Failed EQUALVERIFY tok %s op %s bcPos %d endbcPos %d", tok, op, bcPos, endbcPos)
+	tok = s.Scan()
+	if tok != token.INVALID {
+		t.Errorf("Failed INVALID tok %s op %s", tok, s.Op())
 	}
 
-	tok, op, bcPos, endbcPos, data, number = s.Scan()
-	if tok != token.OPERATION || op != opcode.CHECKSIG || bcPos != 24 || endbcPos != 25 || data != nil || number != nil {
-		t.Errorf("Failed CHECKSIG tok %s op %s bcPos %d endbcPos %d", tok, op, bcPos, endbcPos)
+	tok = s.Scan()
+	if tok != token.OPERATION || s.Op() != opcode.CHECKSIG {
+		t.Errorf("Failed CHECKSIG tok %s op %s", tok, s.Op())
 	}
 
-	tok, op, bcPos, endbcPos, data, number = s.Scan()
-	if tok != token.ENDOFSCRIPT || op != opcode.INVALID || bcPos != 25 || endbcPos != 26 || data != nil || number != nil {
-		t.Errorf("Failed ENDOFSCRIPT tok %s op %s bcPos %d endbcPos %d", tok, op, bcPos, endbcPos)
+	tok = s.Scan()
+	if tok != token.ENDOFSCRIPT {
+		t.Errorf("Failed ENDOFSCRIPT tok %s", tok)
 	}
 
-	tok, op, bcPos, endbcPos, data, number = s.Scan()
-	if tok != token.ENDOFSCRIPT || op != opcode.INVALID || bcPos != 25 || endbcPos != 26 || data != nil || number != nil {
-		t.Errorf("Failed double ENDOFSCRIPT tok %s op %s bcPos %d endbcPos %d", tok, op, bcPos, endbcPos)
+	tok = s.Scan()
+	if tok != token.ENDOFSCRIPT {
+		t.Errorf("Failed double ENDOFSCRIPT tok %s", tok)
 	}
 
 	if !errorReported {
-		t.Errorf("Failed No ErrorReported")
+		t.Errorf("Failed Not ErrorReported")
 	}
 
 	if s.ErrorCount != 1 {
-		t.Errorf("Failed ErrorCount !=0 %d", s.ErrorCount)
+		t.Errorf("Failed ErrorCount %d", s.ErrorCount)
 	}
 
 }
@@ -178,44 +178,44 @@ func TestInvalidScript(t *testing.T) {
 		errorReported = true
 	})
 
-	tok, op, bcPos, endbcPos, data, number := s.Scan()
-	if tok != token.OPERATION || op != opcode.IFDUP || bcPos != 0 || endbcPos != 1 || data != nil || number != nil {
-		t.Errorf("Failed IFDUP tok %s op %s bcPos %d endbcPos %d", tok, op, bcPos, endbcPos)
+	tok := s.Scan()
+	if tok != token.OPERATION || s.Op() != opcode.IFDUP {
+		t.Errorf("Failed IFDUP tok %s op %s", tok, s.Op())
 	}
 
-	tok, op, bcPos, endbcPos, data, number = s.Scan()
-	if tok != token.IF || op != opcode.INVALID || bcPos != 1 || endbcPos != 2 || data != nil || number != nil {
-		t.Errorf("Failed IF tok %s op %s bcPos %d endbcPos %d", tok, op, bcPos, endbcPos)
+	tok = s.Scan()
+	if tok != token.IF {
+		t.Errorf("Failed IF tok %s op %s", tok, s.Op())
 	}
 
-	tok, op, bcPos, endbcPos, data, number = s.Scan()
-	if tok != token.OPERATION || op != opcode.TWOSWAP || bcPos != 2 || endbcPos != 3 || data != nil || number != nil {
-		t.Errorf("Failed TWOSWAP tok %s op %s bcPos %d endbcPos %d", tok, op, bcPos, endbcPos)
+	tok = s.Scan()
+	if tok != token.OPERATION || s.Op() != opcode.TWOSWAP {
+		t.Errorf("Failed TWOSWAP tok %s op %s", tok, s.Op())
 	}
 
-	tok, op, bcPos, endbcPos, data, number = s.Scan()
-	if tok != token.OPERATION || op != opcode.VERIFY || bcPos != 3 || endbcPos != 4 || data != nil || number != nil {
-		t.Errorf("Failed EQUALVERIFY tok %s op %s bcPos %d endbcPos %d", tok, op, bcPos, endbcPos)
+	tok = s.Scan()
+	if tok != token.OPERATION || s.Op() != opcode.VERIFY {
+		t.Errorf("Failed VERIFY tok %s op %s", tok, s.Op())
 	}
 
-	tok, op, bcPos, endbcPos, data, number = s.Scan()
-	if tok != token.OPERATION || op != opcode.TWOOVER || bcPos != 4 || endbcPos != 5 || data != nil || number != nil {
-		t.Errorf("Failed TWOOVER tok %s op %s bcPos %d endbcPos %d", tok, op, bcPos, endbcPos)
+	tok = s.Scan()
+	if tok != token.OPERATION || s.Op() != opcode.TWOOVER {
+		t.Errorf("Failed TWOOVER tok %s op %s", tok, s.Op())
 	}
 
-	tok, op, bcPos, endbcPos, data, number = s.Scan()
-	if tok != token.OPERATION || op != opcode.DEPTH || bcPos != 5 || endbcPos != 6 || data != nil || number != nil {
-		t.Errorf("Failed TWOOVER tok %s op %s bcPos %d endbcPos %d", tok, op, bcPos, endbcPos)
+	tok = s.Scan()
+	if tok != token.OPERATION || s.Op() != opcode.DEPTH {
+		t.Errorf("Failed DEPTH tok %s op %s", tok, s.Op())
 	}
 
-	tok, op, bcPos, endbcPos, data, number = s.Scan()
-	if tok != token.ENDOFSCRIPT || op != opcode.INVALID || bcPos != 6 || endbcPos != 7 || data != nil || number != nil {
-		t.Errorf("Failed ENDOFSCRIPT tok %s op %s bcPos %d endbcPos %d", tok, op, bcPos, endbcPos)
+	tok = s.Scan()
+	if tok != token.ENDOFSCRIPT {
+		t.Errorf("Failed ENDOFSCRIPT tok %s", tok)
 	}
 
-	tok, op, bcPos, endbcPos, data, number = s.Scan()
-	if tok != token.ENDOFSCRIPT || op != opcode.INVALID || bcPos != 6 || endbcPos != 7 || data != nil || number != nil {
-		t.Errorf("Failed double ENDOFSCRIPT tok %s op %s bcPos %d endbcPos %d", tok, op, bcPos, endbcPos)
+	tok = s.Scan()
+	if tok != token.ENDOFSCRIPT {
+		t.Errorf("Failed double ENDOFSCRIPT tok %s", tok)
 	}
 
 	if errorReported {
@@ -223,7 +223,7 @@ func TestInvalidScript(t *testing.T) {
 	}
 
 	if s.ErrorCount != 0 {
-		t.Errorf("Failed ErrorCount !=0 %d", s.ErrorCount)
+		t.Errorf("Failed ErrorCount %d", s.ErrorCount)
 	}
 }
 

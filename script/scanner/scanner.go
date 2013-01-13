@@ -9,10 +9,15 @@ import (
 type ErrorHandler func(byteCodePos int, msg string)
 
 type Scanner struct {
-	script     []byte
-	pos        int
-	ErrorCount int
-	err        ErrorHandler
+	script         []byte
+	pos            int
+	endByteCodePos int
+	ErrorCount     int
+	err            ErrorHandler
+
+	op     opcode.OpCode
+	data   []byte
+	number *big.Int
 }
 
 var _EMPTY_SLICE = []byte{}
@@ -30,13 +35,32 @@ func (s *Scanner) raiseError(msg string) {
 	}
 }
 
-func (s *Scanner) Scan() (tok token.Token, op opcode.OpCode, byteCodePos int, endByteCodePos int, data []byte, number *big.Int) {
+func (s *Scanner) Pos() int {
+	return s.pos
+}
+
+func (s *Scanner) EndPos() int {
+	return s.endByteCodePos
+}
+
+func (s *Scanner) Op() opcode.OpCode {
+	return s.op
+}
+
+func (s *Scanner) Data() []byte {
+	return s.data
+}
+
+func (s *Scanner) Number() *big.Int {
+	return s.number
+}
+
+func (s *Scanner) Scan() (tok token.Token) {
 
 	tok = token.INVALID
-	op = opcode.INVALID
-	byteCodePos = s.pos
-	data = nil
-	number = nil
+	s.op = opcode.INVALID
+	s.data = nil
+	s.number = nil
 
 	if s.pos >= len(s.script) {
 		tok = token.ENDOFSCRIPT
@@ -46,7 +70,7 @@ func (s *Scanner) Scan() (tok token.Token, op opcode.OpCode, byteCodePos int, en
 		switch {
 		case bytecode == 0x00: //OP_0
 			tok = token.DATA
-			data = _EMPTY_SLICE
+			s.data = _EMPTY_SLICE
 		case bytecode <= byte(0x4b): //PUSH CONSTANT
 			tok = token.DATA
 			dataPos := s.pos + 1
@@ -55,7 +79,7 @@ func (s *Scanner) Scan() (tok token.Token, op opcode.OpCode, byteCodePos int, en
 				s.raiseError("Script Underflow")
 				endOfData = len(s.script)
 			}
-			data = s.script[dataPos:endOfData]
+			s.data = s.script[dataPos:endOfData]
 			s.pos = s.pos + int(bytecode)
 		case bytecode == 0x4c: //PUSHDATA1
 			tok = token.DATA
@@ -67,7 +91,7 @@ func (s *Scanner) Scan() (tok token.Token, op opcode.OpCode, byteCodePos int, en
 				s.raiseError("Script Underflow")
 				endOfData = len(s.script)
 			}
-			data = s.script[dataPos:endOfData]
+			s.data = s.script[dataPos:endOfData]
 
 			s.pos = s.pos + byteCount + 1
 		case bytecode == 0x4d: //PUSHDATA2
@@ -80,7 +104,7 @@ func (s *Scanner) Scan() (tok token.Token, op opcode.OpCode, byteCodePos int, en
 				s.raiseError("Script Underflow")
 				endOfData = len(s.script)
 			}
-			data = s.script[dataPos:endOfData]
+			s.data = s.script[dataPos:endOfData]
 
 			s.pos = s.pos + int(byteCount) + 2
 		case bytecode == 0x4e: //PUSHDATA4
@@ -92,17 +116,17 @@ func (s *Scanner) Scan() (tok token.Token, op opcode.OpCode, byteCodePos int, en
 				s.raiseError("Script Underflow")
 				endOfData = len(s.script)
 			}
-			data = s.script[dataPos:endOfData]
+			s.data = s.script[dataPos:endOfData]
 			s.pos = s.pos + int(byteCount) + 2
 		case bytecode == 0x4f: //1Negate
 			tok = token.NUMBER
-			number = big.NewInt(-1)
+			s.number = big.NewInt(-1)
 		case bytecode <= byte(0x60):
 			tok = token.NUMBER
-			number = big.NewInt(int64(bytecode - 80))
+			s.number = big.NewInt(int64(bytecode - 80))
 		case opcode.OpCode(bytecode).IsValid():
 			tok = token.OPERATION
-			op = opcode.OpCode(bytecode)
+			s.op = opcode.OpCode(bytecode)
 		case bytecode == 0xab: //CODESEPARATOR
 			tok = token.CODESEPARATOR
 		case bytecode == 0x63: //IF
@@ -115,14 +139,14 @@ func (s *Scanner) Scan() (tok token.Token, op opcode.OpCode, byteCodePos int, en
 			tok = token.ENDIF
 		default:
 			tok = token.INVALID
-			op = opcode.INVALID
-			data = nil
-			number = nil
+			s.op = opcode.INVALID
+			s.data = nil
+			s.number = nil
 			s.raiseError("Invalid Token")
 		}
 	}
 
-	endByteCodePos = s.pos + 1
+	s.endByteCodePos = s.pos + 1
 
 	if tok != token.ENDOFSCRIPT {
 		s.pos++
