@@ -215,6 +215,22 @@ var opcodes = [...]string{
 	NOP10:     "NOP10",
 }
 
+var lookup map[string]OpCode = make(map[string]OpCode)
+
+func init() {
+	for opcode, name := range opcodes {
+		lookup[name] = OpCode(opcode)
+	}
+}
+
+func Parse(s string) OpCode {
+	opcode, found := lookup[s]
+	if found {
+		return opcode
+	}
+	return INVALID
+}
+
 func (this OpCode) IsFlow() bool {
 	return this == NOP ||
 		this == VERIFY ||
