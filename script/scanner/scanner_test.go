@@ -59,8 +59,8 @@ func TestStandardTransactionToBitcoinAddress(t *testing.T) {
 		t.Errorf("Failed ErrorReported")
 	}
 
-	if s.ErrorCount != 0 {
-		t.Errorf("Failed ErrorCount %d", s.ErrorCount)
+	if s.ErrorCount() != 0 {
+		t.Errorf("Failed ErrorCount() %d", s.ErrorCount())
 	}
 
 }
@@ -106,8 +106,8 @@ func TestUnderflow(t *testing.T) {
 		t.Errorf("Failed Not ErrorReported")
 	}
 
-	if s.ErrorCount != 1 {
-		t.Errorf("Failed ErrorCount %d", s.ErrorCount)
+	if s.ErrorCount() != 1 {
+		t.Errorf("Failed ErrorCount() %d", s.ErrorCount())
 	}
 
 }
@@ -162,8 +162,8 @@ func TestInvalidToken(t *testing.T) {
 		t.Errorf("Failed Not ErrorReported")
 	}
 
-	if s.ErrorCount != 1 {
-		t.Errorf("Failed ErrorCount %d", s.ErrorCount)
+	if s.ErrorCount() != 1 {
+		t.Errorf("Failed ErrorCount() %d", s.ErrorCount())
 	}
 
 }
@@ -222,8 +222,8 @@ func TestInvalidScript(t *testing.T) {
 		t.Errorf("Failed ErrorReported")
 	}
 
-	if s.ErrorCount != 0 {
-		t.Errorf("Failed ErrorCount %d", s.ErrorCount)
+	if s.ErrorCount() != 0 {
+		t.Errorf("Failed ErrorCount() %d", s.ErrorCount())
 	}
 }
 

@@ -12,12 +12,13 @@ type Scanner struct {
 	script         []byte
 	pos            int
 	endByteCodePos int
-	ErrorCount     int
+	errorCount     int
 	err            ErrorHandler
 
-	op     opcode.OpCode
-	data   []byte
-	number *big.Int
+	op       opcode.OpCode
+	byteCode byte
+	data     []byte
+	number   *big.Int
 }
 
 var _EMPTY_SLICE = []byte{}
@@ -29,7 +30,7 @@ func (s *Scanner) Init(script []byte, err ErrorHandler) {
 }
 
 func (s *Scanner) raiseError(msg string) {
-	s.ErrorCount++
+	s.errorCount++
 	if s.err != nil {
 		s.err(s.pos, msg)
 	}
@@ -47,12 +48,20 @@ func (s *Scanner) Op() opcode.OpCode {
 	return s.op
 }
 
+func (s *Scanner) ByteCode() byte {
+	return s.byteCode
+}
+
 func (s *Scanner) Data() []byte {
 	return s.data
 }
 
 func (s *Scanner) Number() *big.Int {
 	return s.number
+}
+
+func (s *Scanner) ErrorCount() int {
+	return s.errorCount
 }
 
 func (s *Scanner) Scan() (tok token.Token) {
@@ -66,6 +75,7 @@ func (s *Scanner) Scan() (tok token.Token) {
 		tok = token.ENDOFSCRIPT
 	} else {
 		bytecode := s.script[s.pos]
+		s.byteCode = bytecode
 
 		switch {
 		case bytecode == 0x00: //OP_0
