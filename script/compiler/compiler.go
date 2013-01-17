@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"errors"
+	"github.com/spearson78/guardian/encoding/scriptint"
 	"github.com/spearson78/guardian/script/opcode"
 	"github.com/spearson78/guardian/script/token"
 	"math"
@@ -14,6 +15,8 @@ type TokenSource interface {
 	Op() opcode.OpCode
 	Data() []byte
 	Number() *big.Int
+
+	ErrorCount() int
 }
 
 var c16 = big.NewInt(16)
@@ -55,23 +58,7 @@ func Compile(s TokenSource) ([]byte, error) {
 			case n.Sign() > 0 && n.Cmp(c16) <= 0:
 				compiled = append(compiled, byte(80+n.Int64()))
 			default:
-				sign := n.Sign()
-
-				n.Abs(n)
-				data := n.Bytes()
-
-				if data[0]&0x80 == 0x80 {
-					extended := make([]byte, len(data)+1)
-					copy(extended[1:], data)
-					data = extended
-				}
-
-				if sign == -1 {
-					data[0] = data[0] | 0x80
-				}
-
-				reverseInPlace(data)
-
+				data := scriptint.Encode(n)
 				compiled = appendPushData(compiled, data)
 			}
 		case token.OPERATION:
@@ -95,17 +82,10 @@ func Compile(s TokenSource) ([]byte, error) {
 		tok = s.Scan()
 	}
 
+	if s.ErrorCount() != 0 {
+		return nil, errors.New("TokenSource reported errors")
+	}
+
 	return compiled, nil
 
-}
-
-func reverseInPlace(in []byte) {
-
-	l := len(in)
-	hl := l / 2
-
-	for i := 0; i < hl; i++ {
-		j := l - i - 1
-		in[i], in[j] = in[j], in[i]
-	}
 }
