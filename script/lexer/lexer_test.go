@@ -73,8 +73,8 @@ CHECKSIG
 		t.Errorf("Failed ErrorReported")
 	}
 
-	if l.ErrorCount != 0 {
-		t.Errorf("Failed ErrorCount %d", l.ErrorCount)
+	if l.ErrorCount() != 0 {
+		t.Errorf("Failed ErrorCount %d", l.ErrorCount())
 	}
 }
 
@@ -136,8 +136,8 @@ CHECKSIG
 		t.Errorf("Failed ErrorReported")
 	}
 
-	if l.ErrorCount != 0 {
-		t.Errorf("Failed ErrorCount %d", l.ErrorCount)
+	if l.ErrorCount() != 0 {
+		t.Errorf("Failed ErrorCount() %d", l.ErrorCount())
 	}
 }
 
@@ -166,8 +166,8 @@ func TestMinusOne(t *testing.T) {
 		t.Errorf("Failed ErrorReported")
 	}
 
-	if l.ErrorCount != 0 {
-		t.Errorf("Failed ErrorCount %d", l.ErrorCount)
+	if l.ErrorCount() != 0 {
+		t.Errorf("Failed ErrorCount() %d", l.ErrorCount())
 	}
 }
 
@@ -196,8 +196,8 @@ func TestMinusOperation(t *testing.T) {
 		t.Errorf("Failed ErrorReported")
 	}
 
-	if l.ErrorCount != 0 {
-		t.Errorf("Failed ErrorCount %d", l.ErrorCount)
+	if l.ErrorCount() != 0 {
+		t.Errorf("Failed ErrorCount() %d", l.ErrorCount())
 	}
 }
 
@@ -226,8 +226,8 @@ func TestMinus(t *testing.T) {
 		t.Errorf("Failed ErrorReported")
 	}
 
-	if l.ErrorCount != 0 {
-		t.Errorf("Failed ErrorCount %d", l.ErrorCount)
+	if l.ErrorCount() != 0 {
+		t.Errorf("Failed ErrorCount() %d", l.ErrorCount())
 	}
 }
 
@@ -289,8 +289,8 @@ CHECKSIG
 		t.Errorf("Failed No ErrorReported")
 	}
 
-	if l.ErrorCount != 1 {
-		t.Errorf("Failed ErrorCount %d", l.ErrorCount)
+	if l.ErrorCount() != 1 {
+		t.Errorf("Failed ErrorCount() %d", l.ErrorCount())
 	}
 }
 

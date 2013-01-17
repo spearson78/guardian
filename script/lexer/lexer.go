@@ -14,7 +14,7 @@ type ErrorHandler func(byteCodePos int, msg string)
 
 type Lexer struct {
 	s          scanner.Scanner
-	ErrorCount int
+	errorCount int
 	err        ErrorHandler
 
 	op     opcode.OpCode
@@ -29,7 +29,7 @@ func (l *Lexer) Init(r io.Reader, err ErrorHandler) {
 }
 
 func (l *Lexer) raiseError(msg string) {
-	l.ErrorCount++
+	l.errorCount++
 	if l.err != nil {
 		l.err(0, msg)
 	}
@@ -49,6 +49,10 @@ func (l *Lexer) Data() []byte {
 
 func (l *Lexer) Number() *big.Int {
 	return l.number
+}
+
+func (l *Lexer) ErrorCount() int {
+	return l.errorCount
 }
 
 func (l *Lexer) Scan() (tok token.Token) {
