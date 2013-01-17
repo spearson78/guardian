@@ -1,5 +1,9 @@
 package opcode
 
+import (
+	"fmt"
+)
+
 type OpCode byte
 
 const (
@@ -45,33 +49,33 @@ const (
 	EQUALVERIFY OpCode = 0x88
 
 	//Arithmetic
-	ONEADD            OpCode = 0x8b
-	ONESUB            OpCode = 0x8c
-	TWOMUL            OpCode = 0x8d
-	TWODIV            OpCode = 0x8e
-	NEGATE            OpCode = 0x8f
-	ABS               OpCode = 0x90
-	NOT               OpCode = 0x91
-	ZERONOTEQUAL      OpCode = 0x92
-	ADD               OpCode = 0x93
-	SUB               OpCode = 0x94
-	MUL               OpCode = 0x95
-	DIV               OpCode = 0x96
-	MOD               OpCode = 0x97
-	LSHIFT            OpCode = 0x98
-	RSHIFT            OpCode = 0x99
-	BOOLAND           OpCode = 0x9a
-	BOOLOR            OpCode = 0x9b
-	NUMEQUAL          OpCode = 0x9c
-	NUMEQUALVERIFY    OpCode = 0x9d
-	NUMNOTEQUAL       OpCode = 0x9e
-	LESSTHAN          OpCode = 0x9f
-	GREATERTHAN       OpCode = 0xa0
-	LESSTHANOREQUAL   OpCode = 0xa1
-	GREATETHANOREQUAL OpCode = 0xa2
-	MIN               OpCode = 0xa3
-	MAX               OpCode = 0xa4
-	WITHIN            OpCode = 0xa5
+	ONEADD             OpCode = 0x8b
+	ONESUB             OpCode = 0x8c
+	TWOMUL             OpCode = 0x8d
+	TWODIV             OpCode = 0x8e
+	NEGATE             OpCode = 0x8f
+	ABS                OpCode = 0x90
+	NOT                OpCode = 0x91
+	ZERONOTEQUAL       OpCode = 0x92
+	ADD                OpCode = 0x93
+	SUB                OpCode = 0x94
+	MUL                OpCode = 0x95
+	DIV                OpCode = 0x96
+	MOD                OpCode = 0x97
+	LSHIFT             OpCode = 0x98
+	RSHIFT             OpCode = 0x99
+	BOOLAND            OpCode = 0x9a
+	BOOLOR             OpCode = 0x9b
+	NUMEQUAL           OpCode = 0x9c
+	NUMEQUALVERIFY     OpCode = 0x9d
+	NUMNOTEQUAL        OpCode = 0x9e
+	LESSTHAN           OpCode = 0x9f
+	GREATERTHAN        OpCode = 0xa0
+	LESSTHANOREQUAL    OpCode = 0xa1
+	GREATERTHANOREQUAL OpCode = 0xa2
+	MIN                OpCode = 0xa3
+	MAX                OpCode = 0xa4
+	WITHIN             OpCode = 0xa5
 
 	//Crypto
 	RIPEMD160           OpCode = 0xa6
@@ -79,7 +83,6 @@ const (
 	SHA256              OpCode = 0xa8
 	HASH160             OpCode = 0xa9
 	HASH256             OpCode = 0xaa
-	CODESEPARATOR       OpCode = 0xab
 	CHECKSIG            OpCode = 0xac
 	CHECKSIGVERIFY      OpCode = 0xad
 	CHECKMULTISIG       OpCode = 0xae
@@ -152,33 +155,33 @@ var opcodes = [...]string{
 	EQUALVERIFY: "EQUALVERIFY",
 
 	//Arithmetic
-	ONEADD:            "ONEADD",
-	ONESUB:            "ONESUB",
-	TWOMUL:            "TWOMUL",
-	TWODIV:            "TWODIV",
-	NEGATE:            "NEGATE",
-	ABS:               "ABS",
-	NOT:               "NOT",
-	ZERONOTEQUAL:      "ZERONOTEQUAL",
-	ADD:               "ADD",
-	SUB:               "SUB",
-	MUL:               "MUL",
-	DIV:               "DIV",
-	MOD:               "MOD",
-	LSHIFT:            "LSHIFT",
-	RSHIFT:            "RSHIFT",
-	BOOLAND:           "BOOLAND",
-	BOOLOR:            "BOOLOR",
-	NUMEQUAL:          "NUMEQUAL",
-	NUMEQUALVERIFY:    "NUMEQUALVERIFY",
-	NUMNOTEQUAL:       "NUMNOTEQUAL",
-	LESSTHAN:          "LESSTHAN",
-	GREATERTHAN:       "GREATERTHAN",
-	LESSTHANOREQUAL:   "LESSTHANOREQUAL",
-	GREATETHANOREQUAL: "GREATETHANOREQUAL",
-	MIN:               "MIN",
-	MAX:               "MAX",
-	WITHIN:            "WITHIN",
+	ONEADD:             "ONEADD",
+	ONESUB:             "ONESUB",
+	TWOMUL:             "TWOMUL",
+	TWODIV:             "TWODIV",
+	NEGATE:             "NEGATE",
+	ABS:                "ABS",
+	NOT:                "NOT",
+	ZERONOTEQUAL:       "ZERONOTEQUAL",
+	ADD:                "ADD",
+	SUB:                "SUB",
+	MUL:                "MUL",
+	DIV:                "DIV",
+	MOD:                "MOD",
+	LSHIFT:             "LSHIFT",
+	RSHIFT:             "RSHIFT",
+	BOOLAND:            "BOOLAND",
+	BOOLOR:             "BOOLOR",
+	NUMEQUAL:           "NUMEQUAL",
+	NUMEQUALVERIFY:     "NUMEQUALVERIFY",
+	NUMNOTEQUAL:        "NUMNOTEQUAL",
+	LESSTHAN:           "LESSTHAN",
+	GREATERTHAN:        "GREATERTHAN",
+	LESSTHANOREQUAL:    "LESSTHANOREQUAL",
+	GREATERTHANOREQUAL: "GREATERTHANOREQUAL",
+	MIN:                "MIN",
+	MAX:                "MAX",
+	WITHIN:             "WITHIN",
 
 	//Crypto
 	RIPEMD160:           "RIPEMD160",
@@ -301,7 +304,7 @@ func (this OpCode) IsArithmetic() bool {
 		this == LESSTHAN ||
 		this == GREATERTHAN ||
 		this == LESSTHANOREQUAL ||
-		this == GREATETHANOREQUAL ||
+		this == GREATERTHANOREQUAL ||
 		this == MIN ||
 		this == MAX ||
 		this == WITHIN
@@ -313,7 +316,6 @@ func (this OpCode) IsCrypto() bool {
 		this == SHA256 ||
 		this == HASH160 ||
 		this == HASH256 ||
-		this == CODESEPARATOR ||
 		this == CHECKSIG ||
 		this == CHECKSIGVERIFY ||
 		this == CHECKMULTISIG ||
@@ -367,5 +369,5 @@ func (this OpCode) String() string {
 	if this.IsValid() || this.IsPsuedo() {
 		return opcodes[this]
 	}
-	return "UNKNOWN"
+	return "UNKNOWN" + fmt.Sprint(int(this))
 }
