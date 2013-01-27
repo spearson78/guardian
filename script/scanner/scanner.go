@@ -85,8 +85,8 @@ func (s *Scanner) Scan() (tok token.Token) {
 			tok = token.DATA
 			dataPos := s.pos + 1
 			endOfData := dataPos + int(bytecode)
-			if len(s.script) <= endOfData {
-				s.raiseError("Script Underflow")
+			if len(s.script) < endOfData {
+				s.raiseError("Script Underflow Push Constant")
 				endOfData = len(s.script)
 			}
 			s.data = s.script[dataPos:endOfData]
@@ -97,8 +97,8 @@ func (s *Scanner) Scan() (tok token.Token) {
 			dataPos := s.pos + 2
 
 			endOfData := dataPos + byteCount
-			if len(s.script) <= endOfData {
-				s.raiseError("Script Underflow")
+			if len(s.script) < endOfData {
+				s.raiseError("Script Underflow PushData1")
 				endOfData = len(s.script)
 			}
 			s.data = s.script[dataPos:endOfData]
@@ -110,8 +110,8 @@ func (s *Scanner) Scan() (tok token.Token) {
 			dataPos := s.pos + 3
 
 			endOfData := dataPos + int(byteCount)
-			if len(s.script) <= endOfData {
-				s.raiseError("Script Underflow")
+			if len(s.script) < endOfData {
+				s.raiseError("Script Underflow PushData2")
 				endOfData = len(s.script)
 			}
 			s.data = s.script[dataPos:endOfData]
@@ -122,8 +122,8 @@ func (s *Scanner) Scan() (tok token.Token) {
 			byteCount := uint32(s.script[s.pos+1]) | uint32(s.script[s.pos+2]<<8) | uint32(s.script[s.pos+3]<<16) | uint32(s.script[s.pos+4]<<24)
 			dataPos := s.pos + 5
 			endOfData := dataPos + int(byteCount)
-			if len(s.script) <= endOfData {
-				s.raiseError("Script Underflow")
+			if len(s.script) < endOfData {
+				s.raiseError("Script Underflow PushData4")
 				endOfData = len(s.script)
 			}
 			s.data = s.script[dataPos:endOfData]
