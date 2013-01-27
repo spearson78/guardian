@@ -1,0 +1,113 @@
+package block
+
+import (
+	"bytes"
+	"encoding/hex"
+	"testing"
+)
+
+func TestGenesisBlock(t *testing.T) {
+
+	block := Block{
+		Version:       1,
+		PrevBlockHash: [32]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+		MerkleRoot:    [32]byte{0x3B, 0xA3, 0xED, 0xFD, 0x7A, 0x7B, 0x12, 0xB2, 0x7A, 0xC7, 0x2C, 0x3E, 0x67, 0x76, 0x8F, 0x61, 0x7F, 0xC8, 0x1B, 0xC3, 0x88, 0x8A, 0x51, 0x32, 0x3A, 0x9F, 0xB8, 0xAA, 0x4B, 0x1E, 0x5E, 0x4A},
+		Timestamp:     1231006505,
+		Bits:          0x1d00ffff,
+		Nonce:         2083236893,
+	}
+
+	expected, _ := hex.DecodeString("0100000000000000000000000000000000000000000000000000000000000000000000003BA3EDFD7A7B12B27AC72C3E67768F617FC81BC3888A51323A9FB8AA4B1E5E4A29AB5F49FFFF001D1DAC2B7C")
+	expectedHash, _ := hex.DecodeString("6fe28c0ab6f1b372c1a6a246ae63f74f931e8365e15a089c68d6190000000000")
+
+	encoded, err := block.Bytes()
+	if err != nil {
+		t.Errorf(".Bytes() failed %v", err)
+	}
+
+	if !bytes.Equal(encoded, expected) {
+		t.Errorf("Incorrect .Bytes() expected %s , encoded %s", hex.EncodeToString(expected), hex.EncodeToString(encoded))
+	}
+
+	var setBlock Block
+	err = setBlock.Set(encoded)
+	if err != nil {
+		t.Errorf(".Set() failed %v", err)
+	}
+
+	if setBlock.Version != block.Version {
+		t.Errorf(".Set() incorrect version %v", setBlock.Version)
+	}
+
+	if !bytes.Equal(setBlock.PrevBlockHash[:], block.PrevBlockHash[:]) {
+		t.Errorf(".Set() incorrect PrevBlockHash %v", hex.EncodeToString(setBlock.PrevBlockHash[:]))
+	}
+
+	if !bytes.Equal(setBlock.MerkleRoot[:], block.MerkleRoot[:]) {
+		t.Errorf(".Set() incorrect MerkleRoot %v", hex.EncodeToString(setBlock.MerkleRoot[:]))
+	}
+
+	if setBlock.Timestamp != block.Timestamp {
+		t.Errorf(".Set() incorrect Timestamp %v", setBlock.Timestamp)
+	}
+
+	if setBlock.Bits != block.Bits {
+		t.Errorf(".Set() incorrect Bits %v", setBlock.Bits)
+	}
+
+	if setBlock.Nonce != block.Nonce {
+		t.Errorf(".Set() incorrect Nonce %v", setBlock.Nonce)
+	}
+
+	hash, err := block.Hash()
+	if err != nil {
+		t.Errorf(".Hash() failed %v", err)
+	}
+
+	if !bytes.Equal(hash[:], expectedHash[:]) {
+		t.Errorf(".Hash() incorrect %v", hex.EncodeToString(hash[:]))
+	}
+
+}
+
+func BenchmarkBytes(b *testing.B) {
+
+	block := Block{
+		Version:       1,
+		PrevBlockHash: [32]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+		MerkleRoot:    [32]byte{0x3B, 0xA3, 0xED, 0xFD, 0x7A, 0x7B, 0x12, 0xB2, 0x7A, 0xC7, 0x2C, 0x3E, 0x67, 0x76, 0x8F, 0x61, 0x7F, 0xC8, 0x1B, 0xC3, 0x88, 0x8A, 0x51, 0x32, 0x3A, 0x9F, 0xB8, 0xAA, 0x4B, 0x1E, 0x5E, 0x4A},
+		Timestamp:     1231006505,
+		Bits:          0x1d00ffff,
+		Nonce:         2083236893,
+	}
+
+	for i := 0; i < b.N; i++ {
+		block.Bytes()
+	}
+}
+
+func BenchmarkSet(b *testing.B) {
+
+	var block Block
+	data, _ := hex.DecodeString("0100000000000000000000000000000000000000000000000000000000000000000000003BA3EDFD7A7B12B27AC72C3E67768F617FC81BC3888A51323A9FB8AA4B1E5E4A29AB5F49FFFF001D1DAC2B7C")
+
+	for i := 0; i < b.N; i++ {
+		block.Set(data)
+	}
+}
+
+func BenchmarkHash(b *testing.B) {
+
+	block := Block{
+		Version:       1,
+		PrevBlockHash: [32]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+		MerkleRoot:    [32]byte{0x3B, 0xA3, 0xED, 0xFD, 0x7A, 0x7B, 0x12, 0xB2, 0x7A, 0xC7, 0x2C, 0x3E, 0x67, 0x76, 0x8F, 0x61, 0x7F, 0xC8, 0x1B, 0xC3, 0x88, 0x8A, 0x51, 0x32, 0x3A, 0x9F, 0xB8, 0xAA, 0x4B, 0x1E, 0x5E, 0x4A},
+		Timestamp:     1231006505,
+		Bits:          0x1d00ffff,
+		Nonce:         2083236893,
+	}
+
+	for i := 0; i < b.N; i++ {
+		block.Hash()
+	}
+}

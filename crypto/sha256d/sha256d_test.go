@@ -125,6 +125,18 @@ func BenchmarkResetSHA256d(b *testing.B) {
 	}
 }
 
+func Benchmark80(b *testing.B) {
+	in := make([]byte, 80)
+	h := New()
+
+	for i := 0; i < b.N; i++ {
+		h.Reset()
+		h.Write(in)
+		_ = h.Sum(nil)
+
+	}
+}
+
 func Benchmark160(b *testing.B) {
 	in := make([]byte, 160)
 	h := New()
