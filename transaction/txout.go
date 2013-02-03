@@ -1,8 +1,7 @@
 package transaction
 
 import (
-	"encoding/binary"
-	"github.com/spearson78/guardian/encoding/varint"
+	"github.com/spearson78/guardian/dataio"
 	"io"
 )
 
@@ -12,60 +11,36 @@ type TxOut struct {
 }
 
 func (this *TxOut) WriteTo(w io.Writer) (int64, error) {
-	var totalWritten int64
+	var dw dataio.DataWriter
+	dw.Init(w)
 
-	var bufarray [varint.MaxBufferSize]byte
-	buf := bufarray[:]
-
-	binary.LittleEndian.PutUint64(buf, uint64(this.Value))
-	i, err := w.Write(buf[:8])
-	totalWritten += int64(i)
+	err := dw.WriteInt64(this.Value)
 	if err != nil {
-		return totalWritten, err
+		return dw.Count(), err
 	}
 
-	i = varint.PutVarInt(buf, uint64(len(this.Script)))
-	i, err = w.Write(buf[:i])
-	totalWritten += int64(i)
+	err = dw.WriteVarBytes(this.Script)
 	if err != nil {
-		return totalWritten, err
+		return dw.Count(), err
 	}
 
-	i, err = w.Write(this.Script)
-	totalWritten += int64(i)
-	if err != nil {
-		return totalWritten, err
-	}
-
-	return totalWritten, nil
+	return dw.Count(), nil
 }
 
 func (this *TxOut) ReadFrom(r io.Reader) (int64, error) {
-	var totalRead int64
+	var err error
+	var dr dataio.DataReader
+	dr.Init(r)
 
-	var bufarray [varint.MaxBufferSize]byte
-	buf := bufarray[:]
-
-	i, err := r.Read(buf[:8])
-	totalRead += int64(i)
+	this.Value, err = dr.ReadInt64()
 	if err != nil {
-		return totalRead, err
-	}
-	this.Value = int64(binary.LittleEndian.Uint64(buf))
-
-	scriptLength, i, err := varint.ReadVarInt(r)
-	totalRead += int64(i)
-	if err != nil {
-		return totalRead, err
+		return dr.Count(), err
 	}
 
-	this.Script = make([]byte, scriptLength)
-
-	i, err = r.Read(this.Script)
-	totalRead += int64(i)
+	this.Script, err = dr.ReadVarBytes()
 	if err != nil {
-		return totalRead, err
+		return dr.Count(), err
 	}
 
-	return totalRead, nil
+	return dr.Count(), nil
 }

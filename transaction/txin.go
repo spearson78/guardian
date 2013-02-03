@@ -1,8 +1,7 @@
 package transaction
 
 import (
-	"encoding/binary"
-	"github.com/spearson78/guardian/encoding/varint"
+	"github.com/spearson78/guardian/dataio"
 	"io"
 )
 
@@ -13,86 +12,57 @@ type TxIn struct {
 }
 
 func (this *TxIn) WriteTo(w io.Writer) (int64, error) {
-	var totalWritten int64
+	var dw dataio.DataWriter
+	dw.Init(w)
 
-	var bufarray [varint.MaxBufferSize]byte
-	buf := bufarray[:]
-
-	i, err := w.Write(this.Previous.Hash[:])
-	totalWritten += int64(i)
+	err := dw.Write(this.Previous.Hash[:])
 	if err != nil {
-		return totalWritten, err
+		return dw.Count(), err
 	}
 
-	binary.LittleEndian.PutUint32(buf, this.Previous.Index)
-	i, err = w.Write(buf[:4])
-	totalWritten += int64(i)
+	err = dw.WriteUint32(this.Previous.Index)
 	if err != nil {
-		return totalWritten, err
+		return dw.Count(), err
 	}
 
-	i = varint.PutVarInt(buf, uint64(len(this.Script)))
-	i, err = w.Write(buf[:i])
-	totalWritten += int64(i)
+	err = dw.WriteVarBytes(this.Script)
 	if err != nil {
-		return totalWritten, err
+		return dw.Count(), err
 	}
 
-	i, err = w.Write(this.Script)
-	totalWritten += int64(i)
+	err = dw.WriteUint32(this.Sequence)
 	if err != nil {
-		return totalWritten, err
+		return dw.Count(), err
 	}
 
-	binary.LittleEndian.PutUint32(buf, this.Sequence)
-	i, err = w.Write(buf[:4])
-	totalWritten += int64(i)
-	if err != nil {
-		return totalWritten, err
-	}
-
-	return totalWritten, nil
+	return dw.Count(), nil
 }
 
 func (this *TxIn) ReadFrom(r io.Reader) (int64, error) {
-	var totalRead int64
 
-	var bufarray [varint.MaxBufferSize]byte
-	buf := bufarray[:]
+	var err error
+	var dr dataio.DataReader
+	dr.Init(r)
 
-	i, err := r.Read(this.Previous.Hash[:])
-	totalRead += int64(i)
+	err = dr.ReadFull(this.Previous.Hash[:])
 	if err != nil {
-		return totalRead, err
+		return dr.Count(), err
 	}
 
-	i, err = r.Read(buf[:4])
-	totalRead += int64(i)
+	this.Previous.Index, err = dr.ReadUint32()
 	if err != nil {
-		return totalRead, err
-	}
-	this.Previous.Index = binary.LittleEndian.Uint32(buf)
-
-	scriptLength, i, err := varint.ReadVarInt(r)
-	totalRead += int64(i)
-	if err != nil {
-		return totalRead, err
+		return dr.Count(), err
 	}
 
-	this.Script = make([]byte, scriptLength)
-
-	i, err = r.Read(this.Script)
-	totalRead += int64(i)
+	this.Script, err = dr.ReadVarBytes()
 	if err != nil {
-		return totalRead, err
+		return dr.Count(), err
 	}
 
-	i, err = r.Read(buf[:4])
-	totalRead += int64(i)
+	this.Sequence, err = dr.ReadUint32()
 	if err != nil {
-		return totalRead, err
+		return dr.Count(), err
 	}
-	this.Sequence = binary.LittleEndian.Uint32(buf)
 
-	return totalRead, nil
+	return dr.Count(), nil
 }

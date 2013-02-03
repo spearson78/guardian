@@ -2,9 +2,8 @@ package transaction
 
 import (
 	"bytes"
-	"encoding/binary"
 	"github.com/spearson78/guardian/crypto/sha256d"
-	"github.com/spearson78/guardian/encoding/varint"
+	"github.com/spearson78/guardian/dataio"
 	"io"
 )
 
@@ -35,116 +34,95 @@ func (this *Tx) WriteTo(w io.Writer) (int64, error) {
 		return 0, UnsupportedTxVersionError(this.Version)
 	}
 
-	var totalWritten int64
+	var dw dataio.DataWriter
+	dw.Init(w)
 
-	var bufarray [varint.MaxBufferSize]byte
-	buf := bufarray[:]
-
-	binary.LittleEndian.PutUint32(buf, this.Version)
-	i, err := w.Write(buf[:4])
-	totalWritten += int64(i)
+	err := dw.WriteUint32(this.Version)
 	if err != nil {
-		return totalWritten, err
+		return dw.Count(), err
 	}
 
-	i = varint.PutVarInt(buf, uint64(len(this.Inputs)))
-	i, err = w.Write(buf[:i])
-	totalWritten += int64(i)
+	err = dw.WriteVarInt(uint64(len(this.Inputs)))
 	if err != nil {
-		return totalWritten, err
+		return dw.Count(), err
 	}
 
-	for _, txin := range this.Inputs {
-		i, err := txin.WriteTo(w)
-		totalWritten += i
+	for i, _ := range this.Inputs {
+		err := dw.WriteWriterTo(&this.Inputs[i])
 		if err != nil {
-			return totalWritten, err
+			return dw.Count(), err
 		}
 	}
 
-	i = varint.PutVarInt(buf, uint64(len(this.Outputs)))
-	i, err = w.Write(buf[:i])
-	totalWritten += int64(i)
+	err = dw.WriteVarInt(uint64(len(this.Outputs)))
 	if err != nil {
-		return totalWritten, err
+		return dw.Count(), err
 	}
 
-	for _, txout := range this.Outputs {
-		i, err := txout.WriteTo(w)
-		totalWritten += i
+	for i, _ := range this.Outputs {
+		err := dw.WriteWriterTo(&this.Outputs[i])
 		if err != nil {
-			return totalWritten, err
+			return dw.Count(), err
 		}
 	}
 
-	binary.LittleEndian.PutUint32(buf, this.LockTime)
-	i, err = w.Write(buf[:4])
-	totalWritten += int64(i)
+	err = dw.WriteUint32(this.LockTime)
 	if err != nil {
-		return totalWritten, err
+		return dw.Count(), err
 	}
 
-	return totalWritten, nil
+	return dw.Count(), nil
 }
 
 func (this *Tx) ReadFrom(r io.Reader) (int64, error) {
 
-	var totalRead int64
+	var err error
+	var dr dataio.DataReader
+	dr.Init(r)
 
-	var bufarray [varint.MaxBufferSize]byte
-	buf := bufarray[:]
-
-	i, err := r.Read(buf[0:4])
-	totalRead += int64(i)
+	this.Version, err = dr.ReadUint32()
 	if err != nil {
-		return totalRead, err
+		return dr.Count(), err
 	}
-	this.Version = binary.LittleEndian.Uint32(buf)
 
 	if this.Version > 2 {
 		return 0, UnsupportedTxVersionError(this.Version)
 	}
 
-	inputCount, i, err := varint.ReadVarInt(r)
-	totalRead += int64(i)
+	inputCount, err := dr.ReadVarInt()
 	if err != nil {
-		return totalRead, err
+		return dr.Count(), err
 	}
 
 	this.Inputs = make([]TxIn, inputCount)
 
 	for txInNum := uint64(0); txInNum < inputCount; txInNum++ {
-		i, err := this.Inputs[txInNum].ReadFrom(r)
-		totalRead += i
+		err = dr.ReadReaderFrom(&this.Inputs[txInNum])
 		if err != nil {
-			return totalRead, err
+			return dr.Count(), err
 		}
 	}
 
-	outputCount, i, err := varint.ReadVarInt(r)
-	totalRead += int64(i)
+	outputCount, err := dr.ReadVarInt()
 	if err != nil {
-		return totalRead, err
+		return dr.Count(), err
 	}
 
 	this.Outputs = make([]TxOut, outputCount)
 
 	for txOutNum := uint64(0); txOutNum < outputCount; txOutNum++ {
-		i, err := this.Outputs[txOutNum].ReadFrom(r)
-		totalRead += i
+		err = dr.ReadReaderFrom(&this.Outputs[txOutNum])
 		if err != nil {
-			return totalRead, err
+			return dr.Count(), err
 		}
 	}
 
-	i, err = r.Read(buf[0:4])
-	totalRead += int64(i)
+	this.LockTime, err = dr.ReadUint32()
 	if err != nil {
-		return totalRead, err
+		return dr.Count(), err
 	}
-	this.LockTime = binary.LittleEndian.Uint32(buf)
 
-	return totalRead, nil
+	return dr.Count(), nil
 }
 
 func (this *Tx) Bytes() ([]byte, error) {
@@ -170,11 +148,7 @@ func (this *Tx) Hash() (TxHash, error) {
 	var txHash TxHash
 
 	h := sha256d.New()
-	txData, err := this.Bytes()
-	if err != nil {
-		return txHash, err
-	}
-	_, err = h.Write(txData)
+	_, err := this.WriteTo(h)
 	if err != nil {
 		return txHash, err
 	}
