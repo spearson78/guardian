@@ -36,9 +36,9 @@ func PutVarInt(buf []byte, value uint64) int {
 }
 
 func WriteVarInt(w io.Writer, value uint64) (int, error) {
-	buf := make([]byte, MaxBufferSize)
+	var buf [MaxBufferSize]byte
 
-	i := PutVarInt(buf, value)
+	i := PutVarInt(buf[:], value)
 
 	return w.Write(buf[:i])
 }
@@ -51,7 +51,7 @@ func ReadVarInt(r io.Reader) (uint64, int, error) {
 	var value uint64
 	i := 0
 
-	i, err := r.Read(buf[0:1])
+	i, err := io.ReadFull(r, buf[0:1])
 	if err != nil {
 		return 0, i, err
 	}
@@ -61,7 +61,7 @@ func ReadVarInt(r io.Reader) (uint64, int, error) {
 		value = uint64(buf[0])
 		i = 1
 	case 0xfd:
-		_, err := r.Read(buf[0:2])
+		_, err := io.ReadFull(r, buf[0:2])
 		if err != nil {
 			return 0, i, err
 		}
@@ -69,14 +69,14 @@ func ReadVarInt(r io.Reader) (uint64, int, error) {
 		value = uint64(binary.LittleEndian.Uint16(buf))
 		i = 3
 	case 0xfe:
-		_, err := r.Read(buf[0:4])
+		_, err := io.ReadFull(r, buf[0:4])
 		if err != nil {
 			return 0, i, err
 		}
 		value = uint64(binary.LittleEndian.Uint32(buf))
 		i = 5
 	case 0xff:
-		_, err := r.Read(buf[0:8])
+		_, err := io.ReadFull(r, buf[0:8])
 		if err != nil {
 			return 0, i, err
 		}

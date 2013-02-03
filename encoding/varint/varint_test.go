@@ -3,6 +3,7 @@ package varint
 import (
 	"bytes"
 	"encoding/hex"
+	"io/ioutil"
 	"math"
 	"testing"
 )
@@ -88,5 +89,12 @@ func BenchmarkReadVarInt(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		buf.Seek(0, 0)
 		ReadVarInt(buf)
+	}
+}
+
+func BenchmarkWriteVarInt(b *testing.B) {
+
+	for i := 0; i < b.N; i++ {
+		WriteVarInt(ioutil.Discard, math.MaxUint64)
 	}
 }
