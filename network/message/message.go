@@ -3,7 +3,6 @@ package message
 import (
 	"bytes"
 	"encoding/binary"
-	"errors"
 	"github.com/spearson78/guardian/crypto/sha256d"
 	"io"
 )
@@ -21,6 +20,18 @@ var MaxMessageSize = MaxPayloadSize + 4 + 12 + 4 + 4
 var MagicMainNet = uint32(0xD9B4BEF9)
 var MagicTestNet = uint32(0x0709110B)
 
+type ChecksumError uint32
+
+func (e ChecksumError) Error() string {
+	return "ChecksumError " + string(e)
+}
+
+type PayloadOverflowError uint32
+
+func (e PayloadOverflowError) Error() string {
+	return "PayloadOverflowError " + string(e)
+}
+
 func (this *Message) Checksum() uint32 {
 	h := sha256d.New()
 	_, err := h.Write(this.Payload)
@@ -31,10 +42,7 @@ func (this *Message) Checksum() uint32 {
 
 	var checksum uint32
 
-	checksum = checksum | (uint32(hash[3]) << 24)
-	checksum = checksum | (uint32(hash[2]) << 16)
-	checksum = checksum | (uint32(hash[1]) << 8)
-	checksum = checksum | (uint32(hash[0]) << 0)
+	checksum = binary.LittleEndian.Uint32(hash)
 
 	return checksum
 }
@@ -90,7 +98,7 @@ func (this *Message) ReadFrom(r io.Reader) (int64, error) {
 	var bufarray [4]byte
 	buf := bufarray[:]
 
-	i, err := r.Read(buf)
+	i, err := io.ReadFull(r, buf)
 	totalRead += int64(i)
 	if err != nil {
 		return totalRead, err
@@ -99,7 +107,7 @@ func (this *Message) ReadFrom(r io.Reader) (int64, error) {
 	this.Magic = binary.LittleEndian.Uint32(buf)
 
 	var command [12]byte
-	i, err = r.Read(command[:])
+	i, err = io.ReadFull(r, command[:])
 	totalRead += int64(i)
 	if err != nil {
 		return totalRead, err
@@ -108,7 +116,7 @@ func (this *Message) ReadFrom(r io.Reader) (int64, error) {
 	endOfCommand := bytes.IndexByte(command[:], 0)
 	this.Command = string(command[:endOfCommand])
 
-	i, err = r.Read(buf)
+	i, err = io.ReadFull(r, buf)
 	totalRead += int64(i)
 	if err != nil {
 		return totalRead, err
@@ -117,10 +125,10 @@ func (this *Message) ReadFrom(r io.Reader) (int64, error) {
 	payloadLength := binary.LittleEndian.Uint32(buf)
 
 	if payloadLength > uint32(MaxPayloadSize) {
-		return totalRead, errors.New("Payload Overflow")
+		return totalRead, PayloadOverflowError(payloadLength)
 	}
 
-	i, err = r.Read(buf)
+	i, err = io.ReadFull(r, buf)
 	totalRead += int64(i)
 	if err != nil {
 		return totalRead, err
@@ -129,14 +137,14 @@ func (this *Message) ReadFrom(r io.Reader) (int64, error) {
 	checksum := binary.LittleEndian.Uint32(buf)
 
 	this.Payload = make([]byte, payloadLength)
-	i, err = r.Read(this.Payload)
+	i, err = io.ReadFull(r, this.Payload)
 	totalRead += int64(i)
 	if err != nil {
 		return totalRead, err
 	}
 
 	if this.Checksum() != checksum {
-		return totalRead, errors.New("Checksum Mismatch")
+		return totalRead, ChecksumError(checksum)
 	}
 
 	return totalRead, nil

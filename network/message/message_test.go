@@ -3,6 +3,7 @@ package message
 import (
 	"bytes"
 	"encoding/hex"
+	"io/ioutil"
 	"testing"
 )
 
@@ -76,5 +77,28 @@ func TestMessage(t *testing.T) {
 		if !bytes.Equal(decoded.Payload, test.raw.Payload) {
 			t.Errorf("Command mismatch %d", decoded.Magic)
 		}
+	}
+}
+
+func BenchmarkWriteMessage(b *testing.B) {
+
+	message := Message{
+		Magic:   MagicMainNet,
+		Command: "addr",
+		Payload: []byte{0x01, 0xe2, 0x15, 0x10, 0x4d, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x0A, 0x00, 0x00, 0x01, 0x20, 0x8D},
+	}
+
+	for i := 0; i < b.N; i++ {
+		message.WriteTo(ioutil.Discard)
+	}
+}
+
+func BenchmarkReadMessage(b *testing.B) {
+
+	var message Message
+	data, _ := hex.DecodeString("f9beb4d96164647200000000000000001F000000ED52399B01E215104D010000000000000000000000000000000000FFFF0A000001208D")
+
+	for i := 0; i < b.N; i++ {
+		message.ReadFrom(bytes.NewReader(data))
 	}
 }
