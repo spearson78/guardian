@@ -12,7 +12,7 @@ func TestVersion(t *testing.T) {
 
 	nulladdress, _ := net.ResolveTCPAddr("tcp4", "0.0.0.0:0")
 	testaddress, _ := net.ResolveTCPAddr("tcp4", "78.42.135.86:19000")
-	testtime, _ := time.Parse(time.UnixDate, "Sun Feb 03 10:37:13 CET 2013")
+	testtime, _ := time.Parse(time.UnixDate, "Sun Feb 03 09:37:13 UTC 2013")
 
 	tests := []struct {
 		raw     Version
